@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🩺 ReportSimple
+# 🩺 ReportSimplev2
 
 ### Understand your medical reports in plain language, with safe next steps.
 
