@@ -1,0 +1,167 @@
+"""Fixed, human-reviewable knowledge base. No LLM writes medical content.
+Every entry: meaning, causes, home care, extra tests, doctor type, red flags, medicine_info.
+NOTE: no doses, no brand names, no 'take this'. Have a doctor review this file before real use."""
+
+GENERIC = dict(
+    meaning="This value is outside the printed range. Your doctor can tell you what it means for you.",
+    causes=[], home=[], tests=[], doctor="General physician", red_flags=[], medicine_info="",
+)
+
+ANEMIA_LOW = dict(
+    meaning="Low level of oxygen-carrying red blood cells (possible anemia). Can cause tiredness and paleness.",
+    causes=["Not enough iron, B12 or folate", "Blood loss (heavy periods, bleeding piles/stomach)", "Long-term illness"],
+    home=["Eat iron-rich foods (lentils, leafy greens, meat, liver) with a vitamin C food", "Avoid tea/coffee with meals", "Rest if tired"],
+    tests=["Ferritin, serum iron, TIBC", "Peripheral blood film, MCV/MCH", "Vitamin B12 and folate", "Stool occult blood (if doctor advises)"],
+    doctor="General physician (hematologist if severe)",
+    red_flags=["Breathless at rest", "Chest pain", "Fainting", "Black or bloody stool"],
+    medicine_info="Doctors may prescribe iron, B12 or folate AFTER finding the cause. Do not start these on your own.",
+)
+
+KB = {
+    "hemoglobin": {"low": ANEMIA_LOW,
+                   "high": dict(GENERIC, meaning="Higher than normal hemoglobin. Can be linked to dehydration, smoking or high altitude.",
+                                tests=["Repeat CBC", "Hematocrit"], doctor="General physician")},
+    "rbc": {"low": dict(ANEMIA_LOW, meaning="Fewer red blood cells than normal, which fits with low hemoglobin/anemia."),
+            "high": dict(GENERIC, meaning="More red blood cells than normal. Can be linked to dehydration or smoking.")},
+    "wbc": {"high": dict(
+        meaning="High white blood cells. Often the body fighting infection or inflammation; stress or smoking can also raise it.",
+        causes=["Infection", "Inflammation", "Stress, smoking, some medicines"],
+        home=["Drink enough fluids", "Rest"],
+        tests=["WBC differential count", "CRP / ESR", "Urine routine exam", "Repeat CBC after recovery"],
+        doctor="General physician",
+        red_flags=["High fever with chills", "Severe pain", "Confusion"],
+        medicine_info="If a bacterial infection is found, only a doctor should decide on antibiotics. Do not self-medicate with antibiotics."),
+        "low": dict(meaning="Low white blood cells. Often after a viral infection or because of some medicines.",
+                    causes=["Viral infection", "Some medicines", "B12/folate deficiency"],
+                    tests=["WBC differential count", "Repeat CBC", "B12, folate"],
+                    doctor="General physician", red_flags=["Fever", "Repeated infections"], home=["Avoid close contact with sick people"],
+                    medicine_info="")},
+    "platelet": {"low": dict(meaning="Low platelets, which help blood clot. Can cause easy bruising or bleeding.",
+                             causes=["Viral infection (e.g. dengue)", "Some medicines", "Immune or bone marrow problems"],
+                             tests=["Repeat CBC", "Peripheral blood film", "Dengue NS1/IgM if fever (doctor advises)"],
+                             doctor="General physician (hematologist if persistent)",
+                             red_flags=["Bleeding gums/nose", "Black stool", "Rash with fever"], home=["Avoid injury", "Drink fluids"],
+                             medicine_info="Avoid painkillers like aspirin/ibuprofen unless a doctor says so."),
+                 "high": dict(GENERIC, meaning="High platelets. Often temporary (infection, iron deficiency).", tests=["Repeat CBC", "Ferritin"])},
+    "glucose": {"high": dict(
+        meaning="High fasting blood sugar. Repeated high values may point to prediabetes or diabetes, which a doctor confirms.",
+        causes=["Prediabetes/diabetes", "Recent illness or stress", "Not truly fasting"],
+        home=["Cut sugary drinks and sweets", "Smaller portions of rice/bread, more vegetables and protein", "Walk about 30 minutes most days", "Sleep well"],
+        tests=["HbA1c", "Repeat fasting glucose", "OGTT (doctor advises)", "Urine sugar/ketones", "Lipid profile, kidney tests"],
+        doctor="General physician or endocrinologist",
+        red_flags=["Very thirsty and urinating a lot", "Vomiting", "Confusion or drowsiness", "Fruity-smelling breath"],
+        medicine_info="Diabetes medicines are decided by a doctor after confirming the diagnosis. Never start or stop them on your own."),
+        "low": dict(meaning="Low blood sugar. Can cause shaking, sweating and confusion.",
+                    causes=["Long gap without food", "Diabetes medicines", "Alcohol"],
+                    home=["If you feel shaky and are awake and able to swallow, a sugary drink or sweet is commonly used; then eat a proper meal"],
+                    tests=["Repeat glucose", "HbA1c"], doctor="General physician",
+                    red_flags=["Confusion", "Fainting", "Seizure"], medicine_info="")},
+    "hba1c": {"high": dict(
+        meaning="High average blood sugar over the last ~3 months.",
+        causes=["Prediabetes/diabetes"],
+        home=["Cut sugary drinks and sweets", "Regular walking", "Balanced meals"],
+        tests=["Fasting glucose", "OGTT (doctor advises)", "Lipid profile", "Kidney tests (creatinine, urine ACR)", "Eye and foot check (doctor advises)"],
+        doctor="General physician or endocrinologist",
+        red_flags=["Very thirsty and urinating a lot", "Weight loss without trying", "Blurred vision"],
+        medicine_info="Treatment is decided by a doctor. Never start or stop diabetes medicines on your own.")},
+    "total_chol": {"high": dict(
+        meaning="High total cholesterol, a risk factor for heart and blood vessel disease over time.",
+        causes=["Diet high in fried/fatty food", "Low activity", "Family history", "Thyroid or other conditions"],
+        home=["Less fried food, ghee and trans fats", "More vegetables, oats, beans, fish", "Walk or exercise most days", "No smoking"],
+        tests=["Full lipid profile incl. triglycerides", "TSH", "Liver tests", "Blood pressure, ECG (doctor advises)"],
+        doctor="General physician (cardiologist if risk is high)",
+        red_flags=["Chest pain", "Pain spreading to arm/jaw", "Breathlessness"],
+        medicine_info="Cholesterol medicines are a doctor's decision based on your overall heart risk.")},
+    "ldl": {"high": dict(
+        meaning="High 'bad' LDL cholesterol, which can build up in blood vessels.",
+        causes=["Diet high in saturated/trans fat", "Low activity", "Family history"],
+        home=["Less fried food and red meat fat", "More fibre, oats, nuts, fish", "Exercise", "No smoking"],
+        tests=["Full lipid profile", "TSH", "Liver tests"], doctor="General physician (cardiologist if risk is high)",
+        red_flags=["Chest pain", "Breathlessness"],
+        medicine_info="Cholesterol medicines are a doctor's decision based on your overall heart risk.")},
+    "hdl": {"low": dict(
+        meaning="Low 'good' HDL cholesterol, which helps clear fat from blood.",
+        causes=["Low activity", "Smoking", "Diet", "Diabetes"],
+        home=["Regular exercise", "Stop smoking", "Healthy fats (nuts, fish)"],
+        tests=["Full lipid profile", "Blood sugar/HbA1c"], doctor="General physician",
+        red_flags=[], medicine_info="")},
+    "triglycerides": {"high": dict(
+        meaning="High blood fats (triglycerides). Often linked to sugar, refined carbs, alcohol and weight.",
+        causes=["Sugary/refined food", "Alcohol", "Diabetes", "Overweight"],
+        home=["Cut sugary drinks and sweets", "Limit alcohol", "Exercise"],
+        tests=["Fasting lipid profile", "Blood sugar/HbA1c", "TSH"], doctor="General physician",
+        red_flags=["Severe stomach pain (very high levels)"], medicine_info="")},
+    "creatinine": {"high": dict(
+        meaning="High creatinine, a waste product the kidneys clear. May mean the kidneys are working less well, or you are dehydrated.",
+        causes=["Dehydration", "Kidney problems", "Some medicines (e.g. painkillers)", "Heavy muscle/meat meal"],
+        home=["Drink water as your doctor advises", "Avoid painkillers such as ibuprofen/diclofenac unless a doctor says so"],
+        tests=["eGFR", "Urea/BUN", "Urine routine exam", "Urine albumin (ACR)", "Ultrasound KUB (doctor advises)", "Repeat test"],
+        doctor="General physician or nephrologist",
+        red_flags=["Passing very little urine", "Swelling of face/legs", "Breathlessness", "Vomiting"],
+        medicine_info="Do not take new medicines or herbal products without asking a doctor, as some can harm the kidneys.")},
+    "alt": {"high": dict(
+        meaning="High liver enzyme (ALT), which can mean irritation of the liver.",
+        causes=["Fatty liver", "Viral hepatitis", "Medicines or alcohol"],
+        home=["Avoid alcohol", "Avoid unnecessary medicines and herbal products", "Healthy diet, exercise"],
+        tests=["Full liver profile", "Hepatitis B and C tests", "Liver ultrasound"], doctor="General physician or hepatologist",
+        red_flags=["Yellow eyes/skin", "Dark urine", "Severe stomach pain"],
+        medicine_info="Check with a doctor before using any medicine, including paracetamol in high amounts.")},
+    "ast": {"high": dict(
+        meaning="High liver enzyme (AST). Can be from the liver or from muscle.",
+        causes=["Liver irritation", "Muscle injury or hard exercise"],
+        home=["Avoid alcohol"], tests=["Full liver profile", "Liver ultrasound"], doctor="General physician",
+        red_flags=["Yellow eyes/skin", "Dark urine"], medicine_info="")},
+    "bilirubin": {"high": dict(
+        meaning="High bilirubin, which can cause yellow eyes or skin.",
+        causes=["Liver or bile duct problems", "Red blood cell breakdown", "Gilbert's syndrome (harmless)"],
+        home=["Avoid alcohol"], tests=["Direct/indirect bilirubin", "Liver profile", "Liver ultrasound"],
+        doctor="General physician", red_flags=["Yellow eyes/skin", "Pale stool", "Dark urine", "Fever"], medicine_info="")},
+    "tsh": {"high": dict(
+        meaning="High TSH. The thyroid may be underactive.",
+        causes=["Underactive thyroid"], home=["Keep regular sleep and activity"],
+        tests=["Free T4 (FT4)", "Anti-TPO antibodies"], doctor="General physician or endocrinologist",
+        red_flags=["Extreme tiredness", "Very slow heartbeat"], medicine_info="Thyroid medicine dose must be set by a doctor."),
+        "low": dict(meaning="Low TSH. The thyroid may be overactive.",
+                    causes=["Overactive thyroid"], tests=["Free T4 and T3", "Anti-TPO / TSH receptor antibodies"],
+                    doctor="General physician or endocrinologist", home=[],
+                    red_flags=["Racing heartbeat", "Weight loss", "Tremor"], medicine_info="Treatment must be decided by a doctor.")},
+    "vitamin_d": {"low": dict(
+        meaning="Low vitamin D, which can affect bones and muscles.",
+        causes=["Little sun exposure", "Diet", "Some medical conditions"],
+        home=["Spend some time in morning sunlight", "Foods like eggs and fish"],
+        tests=["Calcium, phosphate", "PTH (doctor advises)"], doctor="General physician",
+        red_flags=["Bone pain", "Muscle weakness"],
+        medicine_info="Doctors often prescribe vitamin D supplements; the dose and duration must be set by a doctor.")},
+    "b12": {"low": dict(
+        meaning="Low vitamin B12, which is needed for blood and nerves.",
+        causes=["Low intake (vegetarian diet)", "Poor absorption", "Some medicines"],
+        home=["Eggs, dairy, fish, meat"], tests=["CBC with MCV", "Folate", "Homocysteine (doctor advises)"],
+        doctor="General physician", red_flags=["Numbness or tingling", "Trouble walking"],
+        medicine_info="B12 tablets or injections are decided by a doctor.")},
+    "uric_acid": {"high": dict(
+        meaning="High uric acid. Can cause gout (painful joints) or kidney stones.",
+        causes=["Diet (red meat, seafood, sweet drinks)", "Alcohol", "Kidney issues"],
+        home=["Drink plenty of water", "Limit red meat, organ meat, alcohol, sweet drinks"],
+        tests=["Kidney tests", "Repeat uric acid"], doctor="General physician or rheumatologist",
+        red_flags=["Sudden red, swollen, very painful joint"], medicine_info="Gout medicines are a doctor's decision.")},
+    "potassium": {"high": dict(
+        meaning="High potassium. This can affect the heart rhythm.",
+        causes=["Kidney problems", "Some medicines", "Sample problem"], tests=["Repeat potassium", "Kidney tests", "ECG"],
+        doctor="General physician", home=[], red_flags=["Palpitations", "Muscle weakness", "Fainting"],
+        medicine_info="Do not take potassium supplements or salt substitutes unless a doctor says so."),
+        "low": dict(meaning="Low potassium. Can cause weakness and affect heart rhythm.",
+                    causes=["Vomiting/diarrhoea", "Some water pills"], tests=["Repeat potassium", "Magnesium", "ECG"],
+                    doctor="General physician", home=["Drink fluids if you have diarrhoea"],
+                    red_flags=["Palpitations", "Severe weakness"], medicine_info="")},
+    "sodium": {"high": dict(meaning="High sodium, often from not drinking enough water.",
+                            causes=["Dehydration"], tests=["Repeat sodium", "Kidney tests"], doctor="General physician",
+                            home=["Drink fluids"], red_flags=["Confusion", "Extreme thirst"], medicine_info=""),
+               "low": dict(meaning="Low sodium. Can cause headache, nausea and confusion.",
+                           causes=["Too much water", "Some medicines", "Vomiting/diarrhoea", "Hormone or kidney problems"],
+                           tests=["Repeat sodium", "Kidney tests", "Urine sodium (doctor advises)"], doctor="General physician",
+                           home=[], red_flags=["Confusion", "Seizure", "Severe headache"], medicine_info="")},
+}
+
+
+def info(key, direction):
+    return KB.get(key, {}).get(direction) or GENERIC
